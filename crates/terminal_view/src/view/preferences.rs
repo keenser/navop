@@ -108,6 +108,15 @@ impl TerminalView {
         });
     }
 
+    pub fn set_key_repeat_enabled(&mut self, enabled: bool, cx: &mut Context<Self>) {
+        if self.key_repeat_enabled == enabled {
+            return;
+        }
+        let _ = update_settings(cx, move |settings| {
+            settings.key_repeat_enabled = enabled;
+        });
+    }
+
     /// 增大字体
     pub fn increase_font_size(&mut self, cx: &mut Context<Self>) {
         let current = f32::from(self.font_size);

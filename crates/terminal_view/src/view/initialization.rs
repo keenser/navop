@@ -308,6 +308,7 @@ impl TerminalView {
             right_click_paste: false,
             paste_image_upload: true,
             vim_scroll_to_arrow_keys: true,
+            key_repeat_enabled: initial_settings.key_repeat_enabled,
             show_line_timestamps: initial_settings.show_line_timestamps,
             show_line_numbers: initial_settings.show_line_numbers,
             line_number_digits: super::terminal_render::MIN_LINE_NUMBER_DIGITS,

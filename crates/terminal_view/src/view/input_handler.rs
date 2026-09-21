@@ -1,5 +1,149 @@
 use super::*;
 
+/// Input handler used by the terminal canvas.
+///
+/// The default [`ElementInputHandler`] keeps macOS's "press and hold" accent
+/// menu enabled, which replaces key auto-repeat with an accent-character popup.
+/// A terminal should behave like Terminal.app and repeat the held key instead,
+/// so [`InputHandler::apple_press_and_hold_enabled`] reflects the user's
+/// `key_repeat_enabled` setting (returning `true` would re-enable the accent
+/// menu and swallow repeats).
+///
+/// When that method reports `false`, the macOS backend delivers repeated
+/// printable keys straight to [`InputHandler::replace_text_in_range`] as raw
+/// input, which the terminal forwards to the PTY — making `x` in vim repeat,
+/// and held letters/digits auto-repeat while typing.
+pub(super) struct TerminalInputHandler {
+    inner: ElementInputHandler<TerminalView>,
+    key_repeat_enabled: bool,
+}
+
+impl TerminalInputHandler {
+    pub(super) fn new(
+        bounds: Bounds<Pixels>,
+        view: Entity<TerminalView>,
+        key_repeat_enabled: bool,
+    ) -> Self {
+        Self {
+            inner: ElementInputHandler::new(bounds, view),
+            key_repeat_enabled,
+        }
+    }
+}
+
+impl InputHandler for TerminalInputHandler {
+    fn selected_text_range(
+        &mut self,
+        ignore_disabled_input: bool,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Option<UTF16Selection> {
+        self.inner
+            .selected_text_range(ignore_disabled_input, window, cx)
+    }
+
+    fn marked_text_range(
+        &mut self,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Option<std::ops::Range<usize>> {
+        self.inner.marked_text_range(window, cx)
+    }
+
+    fn text_for_range(
+        &mut self,
+        range_utf16: std::ops::Range<usize>,
+        adjusted_range: &mut Option<std::ops::Range<usize>>,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Option<String> {
+        self.inner
+            .text_for_range(range_utf16, adjusted_range, window, cx)
+    }
+
+    fn replace_text_in_range(
+        &mut self,
+        replacement_range: Option<std::ops::Range<usize>>,
+        text: &str,
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        self.inner
+            .replace_text_in_range(replacement_range, text, window, cx);
+    }
+
+    fn replace_and_mark_text_in_range(
+        &mut self,
+        range_utf16: Option<std::ops::Range<usize>>,
+        new_text: &str,
+        new_selected_range: Option<std::ops::Range<usize>>,
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        self.inner.replace_and_mark_text_in_range(
+            range_utf16,
+            new_text,
+            new_selected_range,
+            window,
+            cx,
+        );
+    }
+
+    fn unmark_text(&mut self, window: &mut Window, cx: &mut App) {
+        self.inner.unmark_text(window, cx);
+    }
+
+    fn bounds_for_range(
+        &mut self,
+        range_utf16: std::ops::Range<usize>,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Option<Bounds<Pixels>> {
+        self.inner.bounds_for_range(range_utf16, window, cx)
+    }
+
+    fn character_index_for_point(
+        &mut self,
+        point: Point<Pixels>,
+        window: &mut Window,
+        cx: &mut App,
+    ) -> Option<usize> {
+        self.inner.character_index_for_point(point, window, cx)
+    }
+
+    fn set_selected_text_range(
+        &mut self,
+        range_utf16: std::ops::Range<usize>,
+        window: &mut Window,
+        cx: &mut App,
+    ) {
+        self.inner.set_selected_text_range(range_utf16, window, cx);
+    }
+
+    fn element_bounds(&mut self, window: &mut Window, cx: &mut App) -> Option<Bounds<Pixels>> {
+        self.inner.element_bounds(window, cx)
+    }
+
+    fn text_length_utf16(&mut self, window: &mut Window, cx: &mut App) -> Option<usize> {
+        self.inner.text_length_utf16(window, cx)
+    }
+
+    fn apple_press_and_hold_enabled(&mut self) -> bool {
+        // When key repeat is enabled, disable the macOS accent-menu that replaces
+        // key auto-repeat so held keys repeat (vim `x`, typing, deleting,
+        // navigating). When disabled, the accent menu stays available.
+        !self.key_repeat_enabled
+    }
+
+    fn accepts_text_input(&mut self, window: &mut Window, cx: &mut App) -> bool {
+        self.inner.accepts_text_input(window, cx)
+    }
+
+    fn prefers_ime_for_printable_keys(&mut self, _window: &mut Window, _cx: &mut App) -> bool {
+        false
+    }
+}
+
 impl EntityInputHandler for TerminalView {
     fn text_for_range(
         &mut self,

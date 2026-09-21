@@ -40,6 +40,7 @@ impl TerminalView {
         paste_image_upload: bool,
         sync_path: bool,
         vim_scroll_to_arrow_keys: bool,
+        key_repeat_enabled: bool,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
@@ -71,6 +72,7 @@ impl TerminalView {
         self.right_click_paste = right_click_paste;
         self.paste_image_upload = paste_image_upload;
         self.vim_scroll_to_arrow_keys = vim_scroll_to_arrow_keys;
+        self.key_repeat_enabled = key_repeat_enabled;
 
         self.terminal.update(cx, |terminal, _cx| {
             terminal.set_sync_path_with_terminal(sync_path);
@@ -86,6 +88,7 @@ impl TerminalView {
             sidebar.set_right_click_paste(right_click_paste, cx);
             sidebar.set_paste_image_upload(paste_image_upload, cx);
             sidebar.set_vim_scroll_to_arrow_keys(vim_scroll_to_arrow_keys, cx);
+            sidebar.set_key_repeat_enabled(key_repeat_enabled, cx);
             sidebar.set_sync_path_enabled(sync_path, cx);
         });
 
@@ -109,6 +112,7 @@ impl TerminalView {
             settings.paste_image_upload,
             settings.sync_path_with_terminal,
             settings.vim_scroll_to_arrow_keys,
+            settings.key_repeat_enabled,
             window,
             cx,
         );

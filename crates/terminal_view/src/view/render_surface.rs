@@ -1,3 +1,4 @@
+use super::input_handler::TerminalInputHandler;
 use super::*;
 
 struct TerminalViewportState {
@@ -130,12 +131,14 @@ impl TerminalView {
 
     fn render_input_canvas(&self, cx: &mut Context<Self>) -> AnyElement {
         let focus_handle = self.focus_handle.clone();
+        let key_repeat_enabled = self.key_repeat_enabled;
         canvas(|_bounds, _window, _cx| {}, {
             let entity = cx.entity().downgrade();
             let focus_handle = focus_handle.clone();
             move |bounds, _state, window, cx| {
                 if let Some(entity) = entity.upgrade() {
-                    let input_handler = ElementInputHandler::new(bounds, entity);
+                    let input_handler =
+                        TerminalInputHandler::new(bounds, entity, key_repeat_enabled);
                     window.handle_input(&focus_handle, input_handler, cx);
                 }
             }

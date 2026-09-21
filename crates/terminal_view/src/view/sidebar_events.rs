@@ -318,6 +318,9 @@ impl TerminalView {
             TerminalSidebarEvent::VimScrollToArrowKeysChanged(enabled) => {
                 self.set_vim_scroll_to_arrow_keys(*enabled, cx);
             }
+            TerminalSidebarEvent::KeyRepeatEnabledChanged(enabled) => {
+                self.set_key_repeat_enabled(*enabled, cx);
+            }
             TerminalSidebarEvent::SyncPathChanged(enabled) => {
                 let enabled = *enabled;
                 let _ = update_settings(cx, move |settings| {

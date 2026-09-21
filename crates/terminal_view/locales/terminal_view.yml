@@ -766,6 +766,10 @@ Settings:
     en: Mouse wheel as arrow keys in vim/TUI
     zh-CN: vim/TUI 中鼠标滚轮映射为方向键
     zh-HK: vim/TUI 中滑鼠滾輪映射為方向鍵
+  key_repeat_enabled:
+    en: Repeat held keys (disable macOS press-and-hold)
+    zh-CN: 按住按键时自动重复输入（关闭 macOS 强调符号菜单）
+    zh-HK: 按住按鍵時自動重複輸入（關閉 macOS 強調符號選單）
   selection_highlight:
     en: Highlight matching text on selection
     zh-CN: 选中文本后高亮相同内容

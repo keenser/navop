@@ -158,6 +158,8 @@ pub enum SettingsPanelEvent {
     PasteImageUploadChanged(bool),
     /// vim/TUI 滚轮转方向键开关
     VimScrollToArrowKeysChanged(bool),
+    /// 按住按键自动重复输入开关
+    KeyRepeatEnabledChanged(bool),
     /// 选中文本高亮相同内容开关
     SelectionHighlightChanged(bool),
     /// 左边距显示每行到达时间开关
@@ -214,6 +216,8 @@ pub struct SettingsPanel {
     paste_image_upload: bool,
     /// vim/TUI 滚轮转方向键
     vim_scroll_to_arrow_keys: bool,
+    /// 按住按键自动重复输入
+    key_repeat_enabled: bool,
     /// 选中文本高亮相同内容
     selection_highlight: bool,
     /// 左边距展示每行到达时间
@@ -246,6 +250,7 @@ impl SettingsPanel {
         paste_image_upload: bool,
         sync_path: bool,
         vim_scroll_to_arrow_keys: bool,
+        key_repeat_enabled: bool,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
@@ -433,6 +438,7 @@ impl SettingsPanel {
             paste_image_upload,
             sync_path,
             vim_scroll_to_arrow_keys,
+            key_repeat_enabled,
             selection_highlight,
             show_line_timestamps,
             show_line_numbers,
@@ -531,6 +537,11 @@ impl SettingsPanel {
 
     pub fn set_vim_scroll_to_arrow_keys(&mut self, enabled: bool, cx: &mut Context<Self>) {
         self.vim_scroll_to_arrow_keys = enabled;
+        cx.notify();
+    }
+
+    pub fn set_key_repeat_enabled(&mut self, enabled: bool, cx: &mut Context<Self>) {
+        self.key_repeat_enabled = enabled;
         cx.notify();
     }
 
@@ -1107,6 +1118,7 @@ impl SettingsPanel {
         let right_click_paste = self.right_click_paste;
         let paste_image_upload = self.paste_image_upload;
         let vim_scroll_to_arrow_keys = self.vim_scroll_to_arrow_keys;
+        let key_repeat_enabled = self.key_repeat_enabled;
         let selection_highlight = self.selection_highlight;
         let show_line_timestamps = self.show_line_timestamps;
         let show_line_numbers = self.show_line_numbers;
@@ -1282,6 +1294,23 @@ impl SettingsPanel {
                                     .on_click(cx.listener(|this, checked: &bool, _window, cx| {
                                         this.vim_scroll_to_arrow_keys = *checked;
                                         cx.emit(SettingsPanelEvent::VimScrollToArrowKeysChanged(
+                                            *checked,
+                                        ));
+                                    })),
+                            ),
+                    )
+                    .child(
+                        h_flex()
+                            .items_center()
+                            .justify_between()
+                            .child(div().text_sm().child(t!("Settings.key_repeat_enabled")))
+                            .child(
+                                Switch::new("key-repeat-enabled-switch")
+                                    .checked(key_repeat_enabled)
+                                    .small()
+                                    .on_click(cx.listener(|this, checked: &bool, _window, cx| {
+                                        this.key_repeat_enabled = *checked;
+                                        cx.emit(SettingsPanelEvent::KeyRepeatEnabledChanged(
                                             *checked,
                                         ));
                                     })),

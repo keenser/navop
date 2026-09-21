@@ -64,10 +64,17 @@ pub struct TerminalSettings {
     /// 让 vim 等程序不开启鼠标报告也能滚动,同时保留终端原生选区/复制能力。
     #[serde(default = "default_vim_scroll_to_arrow_keys")]
     pub vim_scroll_to_arrow_keys: bool,
+    /// 按住按键时自动重复输入（macOS 上禁用 press-and-hold 的强调符号菜单）
+    #[serde(default = "default_key_repeat_enabled")]
+    pub key_repeat_enabled: bool,
     #[serde(default)]
     pub builtin_highlights_initialized: bool,
     #[serde(default)]
     pub custom_highlights: Vec<TerminalHighlightRule>,
+}
+
+fn default_key_repeat_enabled() -> bool {
+    true
 }
 
 fn default_vim_scroll_to_arrow_keys() -> bool {
@@ -118,6 +125,7 @@ impl TerminalSettings {
             show_line_timestamps: app_settings.terminal_show_timestamps,
             show_line_numbers: app_settings.terminal_show_line_numbers,
             vim_scroll_to_arrow_keys: local_settings.vim_scroll_to_arrow_keys,
+            key_repeat_enabled: local_settings.key_repeat_enabled,
             builtin_highlights_initialized: local_settings.builtin_highlights_initialized,
             custom_highlights: local_settings.custom_highlights.clone(),
         }
@@ -128,6 +136,8 @@ impl TerminalSettings {
 struct TerminalLocalSettings {
     #[serde(default = "default_vim_scroll_to_arrow_keys")]
     vim_scroll_to_arrow_keys: bool,
+    #[serde(default = "default_key_repeat_enabled")]
+    key_repeat_enabled: bool,
     #[serde(default)]
     builtin_highlights_initialized: bool,
     #[serde(default)]
@@ -138,6 +148,7 @@ impl Default for TerminalLocalSettings {
     fn default() -> Self {
         Self {
             vim_scroll_to_arrow_keys: default_vim_scroll_to_arrow_keys(),
+            key_repeat_enabled: default_key_repeat_enabled(),
             builtin_highlights_initialized: true,
             custom_highlights: builtin_highlight_rules(),
         }
@@ -148,6 +159,7 @@ impl From<&TerminalSettings> for TerminalLocalSettings {
     fn from(settings: &TerminalSettings) -> Self {
         Self {
             vim_scroll_to_arrow_keys: settings.vim_scroll_to_arrow_keys,
+            key_repeat_enabled: settings.key_repeat_enabled,
             builtin_highlights_initialized: settings.builtin_highlights_initialized,
             custom_highlights: settings.custom_highlights.clone(),
         }
@@ -375,6 +387,7 @@ mod tests {
         let path = temp_file_path("terminal-settings-round-trip");
         let settings = TerminalLocalSettings {
             vim_scroll_to_arrow_keys: false,
+            key_repeat_enabled: true,
             builtin_highlights_initialized: true,
             custom_highlights: Vec::new(),
         };

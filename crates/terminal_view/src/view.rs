@@ -344,6 +344,8 @@ pub struct TerminalView {
     paste_image_upload: bool,
     /// 在 vim/less/man 等 alt-screen TUI 中,把鼠标滚轮转为方向键发送到 PTY
     vim_scroll_to_arrow_keys: bool,
+    /// 按住按键时自动重复输入（macOS 上禁用 press-and-hold 强调符号菜单）
+    key_repeat_enabled: bool,
     /// 左边距显示每行到达时间
     show_line_timestamps: bool,
     /// 左边距显示行号

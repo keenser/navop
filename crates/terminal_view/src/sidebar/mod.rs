@@ -652,6 +652,8 @@ pub enum TerminalSidebarEvent {
     PasteImageUploadChanged(bool),
     /// vim/TUI 滚轮转方向键开关
     VimScrollToArrowKeysChanged(bool),
+    /// 按住按键自动重复输入开关
+    KeyRepeatEnabledChanged(bool),
     /// 选中文本高亮相同内容开关
     SelectionHighlightChanged(bool),
     /// 左边距显示每行到达时间开关
@@ -952,6 +954,7 @@ impl TerminalSidebar {
                 true,
                 sync_path_enabled,
                 true,
+                true,
                 window,
                 cx,
             )
@@ -1131,6 +1134,9 @@ impl TerminalSidebar {
                 }
                 settings_panel::SettingsPanelEvent::VimScrollToArrowKeysChanged(enabled) => {
                     cx.emit(TerminalSidebarEvent::VimScrollToArrowKeysChanged(*enabled));
+                }
+                settings_panel::SettingsPanelEvent::KeyRepeatEnabledChanged(enabled) => {
+                    cx.emit(TerminalSidebarEvent::KeyRepeatEnabledChanged(*enabled));
                 }
                 settings_panel::SettingsPanelEvent::SelectionHighlightChanged(enabled) => {
                     cx.emit(TerminalSidebarEvent::SelectionHighlightChanged(*enabled));
@@ -1568,6 +1574,12 @@ impl TerminalSidebar {
     pub fn set_vim_scroll_to_arrow_keys(&mut self, enabled: bool, cx: &mut Context<Self>) {
         self.settings_panel.update(cx, |panel, cx| {
             panel.set_vim_scroll_to_arrow_keys(enabled, cx);
+        });
+    }
+
+    pub fn set_key_repeat_enabled(&mut self, enabled: bool, cx: &mut Context<Self>) {
+        self.settings_panel.update(cx, |panel, cx| {
+            panel.set_key_repeat_enabled(enabled, cx);
         });
     }
 
