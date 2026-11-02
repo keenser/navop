@@ -357,6 +357,12 @@ impl SshConnectionOpener {
         if connection.connection_type != ConnectionType::SshSftp {
             return false;
         }
+        // 右键「打开终端」等入口传入的是存储里的原始记录，用户名/密码可能是占位；
+        // 复制标签会原样带上这份连接，所以必须在这里解析钥匙串。
+        let Some(connection) = home.resolve_connection_credentials(connection, window, cx) else {
+            return true;
+        };
+        let connection = &connection;
         let connection_id = connection.id.unwrap_or(0);
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -568,6 +574,27 @@ fn local_profile_kind(kind: TerminalProfileKind) -> LocalTerminalProfileKind {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// SSH 终端标签只能由 `SshConnectionOpener::open_ssh_terminal` 创建，复制标签会
+    /// 原样带上这里的连接，所以这条路径必须先解析钥匙串。
+    #[test]
+    fn ssh_terminal_tab_creation_resolves_credentials() {
+        let source = include_str!("lib.rs").replace("\r\n", "\n");
+        let opener = source
+            .rsplit("fn open_ssh_terminal(")
+            .next()
+            .and_then(|rest| rest.split("\n    fn open_sftp_impl").next())
+            .expect("SshConnectionOpener::open_ssh_terminal");
+
+        assert!(
+            opener.contains("home.resolve_connection_credentials(connection, window, cx)"),
+            "open_ssh_terminal must resolve credentials before building the tab"
+        );
+        // 解析必须发生在创建终端之前，否则占位凭据仍会进到视图里。
+        let resolve = opener.find("resolve_connection_credentials").unwrap();
+        let create = opener.find("TerminalWorkspace::new_ssh_with_index").unwrap();
+        assert!(resolve < create);
+    }
 
     #[test]
     fn shell_domain_registers_its_tab_restorer() {

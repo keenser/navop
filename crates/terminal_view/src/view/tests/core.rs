@@ -388,6 +388,31 @@ fn ssh_reconnect_resolves_latest_saved_connection_by_id() {
 }
 
 #[test]
+fn reconnect_persists_the_resolved_credentials_for_later_duplicates() {
+    let source = include_str!("../preferences.rs").replace("\r\n", "\n");
+    let reconnect = source
+        .split("pub fn reconnect(")
+        .nth(1)
+        .and_then(|rest| rest.split("\n    ///").next())
+        .expect("reconnect method");
+
+    // 复制标签直接复用 duplicate_source 里的连接，所以必须保存解析后的运行时副本，
+    // 否则重连过的标签再复制会带上存储里的占位用户名/密码。
+    assert!(
+        reconnect.contains("let runtime_connection ="),
+        "reconnect should resolve credentials before reconnecting"
+    );
+    assert!(
+        reconnect.contains("connection: runtime_connection"),
+        "duplicate_source must keep the resolved runtime connection"
+    );
+    assert!(
+        !reconnect.contains("connection: source.connection"),
+        "duplicate_source must not fall back to the stored placeholder connection"
+    );
+}
+
+#[test]
 fn terminal_history_scope_matches_supported_connection_kinds() {
     let local = terminal_history_scope(Some(TerminalConnectionKind::Local), None)
         .expect("local terminal should have history scope");

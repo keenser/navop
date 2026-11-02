@@ -250,7 +250,7 @@ impl TerminalView {
                 };
             let apply_result = self.terminal.update(cx, |terminal, _cx| {
                 terminal.apply_ssh_connection_update(SshConnectionUpdate {
-                    connection: runtime_connection,
+                    connection: runtime_connection.clone(),
                     working_dir: source.working_dir.clone(),
                     sync_path_with_terminal: source.sync_path_with_terminal,
                 })
@@ -270,8 +270,9 @@ impl TerminalView {
                 );
                 return;
             }
+            // 保存已解析的运行时连接：复制标签直接复用它，不再从存储重读占位凭据。
             self.duplicate_source = Some(TerminalDuplicateSource::Ssh {
-                connection: source.connection,
+                connection: runtime_connection,
                 working_dir: source.working_dir,
                 sync_path_with_terminal: source.sync_path_with_terminal,
             });
